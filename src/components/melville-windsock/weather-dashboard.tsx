@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,6 +8,7 @@ import { AppHeader } from './app-header';
 import { CurrentWindDisplay } from './current-wind-display';
 import { ApiSelectionInfo } from './api-selection-info';
 import { WindSpeedForecastChart } from './wind-speed-forecast-chart';
+import { ForecastTable } from './forecast-table';
 import { LoadingIndicator } from './loading-indicator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -26,10 +28,8 @@ export function WeatherDashboard() {
     } catch (err) {
       console.error("Dashboard error:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred while fetching data.");
-      // Use fallback data from action if primary fetch fails within action itself.
-      // This handles errors in the component calling the action.
       setWeatherData({
-        currentSpeed: { speed: 0, unit: "km/h" },
+        currentSpeed: { speed: 0, unit: "km/h", direction: "N/A" },
         forecast: [],
         selectedApiName: "Error",
         reasoning: "Failed to load data from server.",
@@ -68,6 +68,7 @@ export function WeatherDashboard() {
               <ApiSelectionInfo apiName={weatherData.selectedApiName} reasoning={weatherData.reasoning} />
             </div>
             <WindSpeedForecastChart data={weatherData.forecast} />
+            <ForecastTable data={weatherData.forecast} />
           </div>
         )}
       </div>
