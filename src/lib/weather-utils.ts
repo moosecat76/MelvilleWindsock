@@ -10,12 +10,13 @@ export const COMPASS_DIRECTION_TO_DEGREES: { [key: string]: number } = {
 };
 
 // The lucide-react Navigation icon, when unrotated (transform: rotate(0deg)),
-// visually points towards South-West (SW), which is 225 degrees.
-// This is based on user observation:
-// Target N (0deg) requires CSS rotation 135deg. (0 - 225 + 360) % 360 = 135.
-// Target E (90deg) requires CSS rotation 225deg. (90 - 225 + 360) % 360 = 225.
-// Target S (180deg) requires CSS rotation 315deg. (180 - 225 + 360) % 360 = 315.
-export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 225;
+// visually points towards North-East (NE), which is 45 degrees.
+// This is based on empirical data from user testing specific CSS rotation values.
+// For example:
+// - Wind FROM S (arrow TO N, target 0°): User needs CSS rotate(315°). (0 - 45 + 360)%360 = 315.
+// - Wind FROM N (arrow TO S, target 180°): User needs CSS rotate(135°). (180 - 45 + 360)%360 = 135.
+// - Wind FROM E (arrow TO W, target 270°): User needs CSS rotate(225°). (270 - 45 + 360)%360 = 225.
+export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 45;
 
 
 /**
@@ -52,3 +53,4 @@ export const getRandomDirectionFallback = (): string => {
     const randomIndex = Math.floor(Math.random() * windDirectionsFallback.length);
     return windDirectionsFallback[randomIndex];
 };
+
