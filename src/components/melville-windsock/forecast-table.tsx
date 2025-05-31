@@ -25,7 +25,7 @@ export function ForecastTable({ data }: ForecastTableProps) {
         <CardHeader>
           <CardTitle className="text-lg font-headline flex items-center">
             <List className="mr-2 h-5 w-5 text-primary" />
-            Detailed Forecast
+            Detailed Forecast (10m)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -40,9 +40,9 @@ export function ForecastTable({ data }: ForecastTableProps) {
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
           <List className="mr-2 h-6 w-6 text-primary" />
-          Detailed 10-Day Forecast
+          Detailed 10-Day Forecast (10m)
         </CardTitle>
-        <CardDescription>2-hourly wind speed and direction (origin) predictions for Melville Waters.</CardDescription>
+        <CardDescription>2-hourly wind speed and direction (origin) predictions at 10m height for Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="max-h-[400px] overflow-y-auto">
@@ -50,16 +50,16 @@ export function ForecastTable({ data }: ForecastTableProps) {
             <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
                 <TableHead className="w-[180px]">Date & Time</TableHead>
-                <TableHead className="text-right">Speed (km/h)</TableHead>
-                <TableHead className="text-center">Direction (from)</TableHead>
+                <TableHead className="text-right">Speed (10m) (km/h)</TableHead>
+                <TableHead className="text-center">Direction (10m) (from)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((item) => (
                 <TableRow key={item.fullDate}>
                   <TableCell className="font-medium">{format(item.dateTime, "MMM d, HH:mm")}</TableCell>
-                  <TableCell className="text-right">{item.speed}</TableCell>
-                  <TableCell className="text-center">{item.direction}</TableCell>
+                  <TableCell className="text-right">{item.speed10m}</TableCell>
+                  <TableCell className="text-center">{item.direction10m}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

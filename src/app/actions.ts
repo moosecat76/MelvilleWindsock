@@ -27,9 +27,9 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
     const baseSpeed = 10 + Math.random() * 10;
 
     const currentSpeed: CurrentWindInfo = {
-      speed: Math.max(0, Math.floor(baseSpeed + (Math.random() * 10 - 5))),
+      speed10m: Math.max(0, Math.floor(baseSpeed + (Math.random() * 10 - 5))),
       unit: "km/h",
-      direction: getRandomDirection(),
+      direction10m: getRandomDirection(),
     };
 
     const forecast: WeatherDataPoint[] = [];
@@ -47,8 +47,8 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
           dateTime: dateTime,
           date: format(dateTime, "MMM d, HH:mm"), // For display or tooltip
           fullDate: format(dateTime, "yyyy-MM-dd HH:mm:ss"), // For detailed reference
-          speed: Math.floor(intervalSpeed),
-          direction: getRandomDirection(),
+          speed10m: Math.floor(intervalSpeed),
+          direction10m: getRandomDirection(),
         });
       }
     }
@@ -71,12 +71,12 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
             dateTime: dateTime,
             date: format(dateTime, "MMM d, HH:mm"),
             fullDate: format(dateTime, "yyyy-MM-dd HH:mm:ss"),
-            speed: 10 + Math.floor(Math.random() * 10),
-            direction: getRandomDirection(),
+            speed10m: 10 + Math.floor(Math.random() * 10),
+            direction10m: getRandomDirection(),
         });
     }
     return {
-      currentSpeed: { speed: 15, unit: "km/h", direction: "S" },
+      currentSpeed: { speed10m: 15, unit: "km/h", direction10m: "S" },
       forecast: fallbackForecast,
       selectedApiName: "Fallback Weather Service",
       reasoning: "Could not connect to the intelligent API selector or fetch live data. Displaying estimates.",

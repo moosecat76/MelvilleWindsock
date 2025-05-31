@@ -29,7 +29,7 @@ export function WeatherDashboard() {
       console.error("Dashboard error:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred while fetching data.");
       setWeatherData({
-        currentSpeed: { speed: 0, unit: "km/h", direction: "N/A" },
+        currentSpeed: { speed10m: 0, unit: "km/h", direction10m: "N/A" },
         forecast: [],
         selectedApiName: "Error",
         reasoning: "Failed to load data from server.",

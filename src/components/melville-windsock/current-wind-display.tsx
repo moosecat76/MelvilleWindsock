@@ -9,8 +9,8 @@ interface CurrentWindDisplayProps {
 }
 
 export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
-  // data.direction is the direction the wind is COMING FROM (e.g., "N")
-  const comingFromDirection = data.direction;
+  // data.direction10m is the direction the wind is COMING FROM (e.g., "N")
+  const comingFromDirection = data.direction10m;
   // The arrow should point where the wind is BLOWING TOWARDS
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
@@ -19,7 +19,7 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
     <Card className="shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-headline flex items-center justify-between">
-          <span>Current Wind</span>
+          <span>Current Wind (10m)</span>
           <span className="text-sm font-normal text-muted-foreground flex items-center">
             <MapPin className="mr-1 h-4 w-4" />
             Melville Waters, WA
@@ -31,7 +31,7 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
           <Gauge className="h-16 w-16 text-accent" />
           <div>
             <p className="text-6xl font-bold text-accent font-headline">
-              {data.speed}
+              {data.speed10m}
             </p>
             <p className="text-2xl text-muted-foreground">{data.unit}</p>
           </div>

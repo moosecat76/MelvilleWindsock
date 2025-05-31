@@ -1,18 +1,18 @@
 
 export interface WeatherDataPoint {
   dateTime: Date; // Precise date and time for the forecast point
-  speed: number;
-  direction: string; // e.g., "NW", "S", "ENE"
+  speed10m: number; // Wind speed at 10 meters
+  direction10m: string; // Wind direction at 10 meters (e.g., "NW", "S", "ENE")
   // Retaining 'date' for potential compatibility or specific display needs, but dateTime is primary
-  date: string; // Formatted for display, e.g., "Jul 20, 14:00" 
+  date: string; // Formatted for display, e.g., "Jul 20, 14:00"
   // Retaining 'fullDate' for similar reasons
   fullDate: string; // Full date string, e.g., "2024-07-20 14:00:00"
 }
 
 export interface CurrentWindInfo {
-  speed: number;
+  speed10m: number; // Wind speed at 10 meters
   unit: string;
-  direction: string; // e.g., "NW", "S", "ENE"
+  direction10m: string; // Wind direction at 10 meters (e.g., "NW", "S", "ENE")
 }
 
 export interface FullWeatherData {

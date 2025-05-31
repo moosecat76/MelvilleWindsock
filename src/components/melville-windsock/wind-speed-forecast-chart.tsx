@@ -16,7 +16,7 @@ interface WindSpeedForecastChartProps {
 
 const chartConfig = {
   windSpeed: {
-    label: "Wind Speed (km/h)",
+    label: "Wind Speed (10m) (km/h)",
     color: "hsl(var(--accent))",
   },
 };
@@ -25,7 +25,7 @@ const chartConfig = {
 const CustomTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload as WeatherDataPoint;
-    const comingFromDirection = dataPoint.direction;
+    const comingFromDirection = dataPoint.direction10m;
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-1 gap-1.5">
@@ -36,7 +36,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
               style={{ backgroundColor: chartConfig.windSpeed.color }}
             />
             <p className="text-sm text-muted-foreground">
-              Speed: <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.speed} km/h</span>
+              Speed (10m): <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.speed10m} km/h</span>
             </p>
           </div>
           <div className="flex items-center">
@@ -56,21 +56,21 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
 
 // Custom Dot for rendering wind direction arrows on the chart
 const ForecastArrowDot = ({ cx, cy, payload }: any) => {
-  if (!payload || typeof payload.direction === 'undefined' || cx === null || cy === null) {
+  if (!payload || typeof payload.direction10m === 'undefined' || cx === null || cy === null) {
     return null;
   }
 
-  const comingFromDirection = payload.direction;
+  const comingFromDirection = payload.direction10m;
   // The arrow should point where the wind is BLOWING TOWARDS.
-  // The `direction` in payload is where it's COMING FROM.
+  // The `direction10m` in payload is where it's COMING FROM.
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
-  const iconSize = 12; 
+  const iconSize = 10; // Reduced size for better visual density
 
   return (
     <g transform={`translate(${cx}, ${cy})`}>
       <Navigation
-        className="text-primary opacity-60" 
+        className="text-primary opacity-50"  // Slightly reduced opacity
         style={{ transform: `rotate(${rotationDegrees}deg)` }}
         width={iconSize}
         height={iconSize}
@@ -88,7 +88,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
         <CardHeader>
           <CardTitle className="text-xl font-headline flex items-center">
             <TrendingUp className="mr-2 h-6 w-6 text-primary" />
-            10-Day Wind Forecast
+            10-Day Wind Forecast (10m)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -98,7 +98,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     );
   }
   
-  const speeds = data.map(d => d.speed);
+  const speeds = data.map(d => d.speed10m);
   const minSpeed = Math.min(...speeds);
   const maxSpeed = Math.max(...speeds);
   const yDomain = [
@@ -106,16 +106,16 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
-  const xAxisInterval = data.length > 24 ? 11 : 0; 
+  const xAxisInterval = data.length > 24 ? 11 : 0; // Show 1 tick per day approx (12 2-hr intervals per day)
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
           <TrendingUp className="mr-2 h-6 w-6 text-primary" />
-          10-Day Wind Forecast
+          10-Day Wind Forecast (10m)
         </CardTitle>
-        <CardDescription>Predicted 2-hourly wind speed and direction (origin) for the next 10 days at Melville Waters.</CardDescription>
+        <CardDescription>Predicted 2-hourly wind speed and direction (origin) at 10m height for the next 10 days at Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
@@ -147,11 +147,11 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 tickFormatter={(value) => `${value}`}
               >
                 <Label
-                  value="Wind Speed (km/h)"
+                  value="Wind Speed (10m) (km/h)"
                   angle={-90}
                   position="insideLeft"
                   style={{ textAnchor: 'middle', fill: 'hsl(var(--foreground))' }}
-                  dy={40} 
+                  dy={60} 
                 />
               </YAxis>
               <ChartTooltip
@@ -165,7 +165,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 </linearGradient>
               </defs>
               <Area
-                dataKey="speed"
+                dataKey="speed10m"
                 type="monotone"
                 fill="url(#fillWindSpeed)"
                 stroke="hsl(var(--accent))"
