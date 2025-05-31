@@ -64,15 +64,23 @@ const ForecastArrowDot = (props: any) => {
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const targetBearing = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
   
-  // Adjust rotation for the Navigation icon's default NW orientation (315 degrees).
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
-  const iconSize = 10; 
+  const iconSize = 20; // Increased size
+
+  let arrowColorClass = "text-primary opacity-50"; // Default color & existing opacity
+  if (payload.speed10m < 12) {
+    arrowColorClass = "text-red-500 opacity-75"; // More opaque for red
+  } else if (payload.speed10m >= 12 && payload.speed10m <= 20) {
+    arrowColorClass = "text-yellow-500 opacity-75"; // More opaque for yellow
+  } else if (payload.speed10m > 20) {
+    arrowColorClass = "text-green-500 opacity-75"; // More opaque for green
+  }
 
   return (
     <g transform={`translate(${cx - iconSize / 2}, ${cy - iconSize / 2})`}>
       <Navigation
-        className="text-primary opacity-50"
+        className={arrowColorClass}
         style={{
           transform: `rotate(${cssRotation}deg)`,
           transformOrigin: `${iconSize / 2}px ${iconSize / 2}px`

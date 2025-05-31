@@ -18,6 +18,15 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
   // cssRotation is the actual degrees value to put in the style.
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
 
+  let arrowColorClass = "text-primary"; // Default color
+  if (data.speed10m < 12) {
+    arrowColorClass = "text-red-500";
+  } else if (data.speed10m >= 12 && data.speed10m <= 20) {
+    arrowColorClass = "text-yellow-500";
+  } else if (data.speed10m > 20) {
+    arrowColorClass = "text-green-500";
+  }
+
   return (
     <Card className="shadow-lg">
       <CardHeader className="pb-2">
@@ -41,7 +50,7 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
         </div>
         <div className="flex flex-col items-end text-right">
           <Navigation
-            className="h-8 w-8 text-primary mb-1"
+            className={`h-16 w-16 mb-1 ${arrowColorClass}`}
             style={{ transform: `rotate(${cssRotation}deg)` }}
           />
           <p className="text-2xl font-bold text-primary font-headline">
