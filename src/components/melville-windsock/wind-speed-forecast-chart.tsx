@@ -141,7 +141,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
               }}
               accessibilityLayer
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={true} />
               <XAxis
                 dataKey="dateTime"
                 tickLine={false}
