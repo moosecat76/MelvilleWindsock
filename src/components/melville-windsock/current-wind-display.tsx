@@ -2,18 +2,21 @@
 import type { CurrentWindInfo } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gauge, MapPin, Navigation } from 'lucide-react';
-import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
+import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES, DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING } from '@/lib/weather-utils';
 
 interface CurrentWindDisplayProps {
   data: CurrentWindInfo;
 }
 
 export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
-  // data.direction10m is the direction the wind is COMING FROM (e.g., "N")
   const comingFromDirection = data.direction10m;
-  // The arrow should point where the wind is BLOWING TOWARDS
   const blowingToDirection = getOppositeDirection(comingFromDirection);
-  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
+  // targetBearing is the compass direction the arrow should visually point.
+  const targetBearing = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
+
+  // Adjust rotation for the Navigation icon's default NW orientation (315 degrees).
+  // cssRotation is the actual degrees value to put in the style.
+  const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
 
   return (
     <Card className="shadow-lg">
@@ -39,7 +42,7 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
         <div className="flex flex-col items-end text-right">
           <Navigation
             className="h-8 w-8 text-primary mb-1"
-            style={{ transform: `rotate(${rotationDegrees}deg)` }}
+            style={{ transform: `rotate(${cssRotation}deg)` }}
           />
           <p className="text-2xl font-bold text-primary font-headline">
             {comingFromDirection}

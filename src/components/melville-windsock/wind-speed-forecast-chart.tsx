@@ -7,7 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
-import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
+import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES, DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING } from '@/lib/weather-utils';
 import { format } from 'date-fns';
 
 interface WindSpeedForecastChartProps {
@@ -21,7 +21,6 @@ const chartConfig = {
   },
 };
 
-// Custom Tooltip Content to include direction and formatted time
 const CustomTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload as WeatherDataPoint;
@@ -41,7 +40,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
           </div>
           <div className="flex items-center">
              <span
-              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Transparent spacer
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent"
             />
             <p className="text-sm text-muted-foreground">
               From: <span className="font-mono font-medium tabular-nums text-foreground">{comingFromDirection}</span>
@@ -54,7 +53,6 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Custom Dot for rendering wind direction arrows on the chart
 const ForecastArrowDot = (props: any) => {
   const { cx, cy, payload } = props;
 
@@ -62,22 +60,22 @@ const ForecastArrowDot = (props: any) => {
     return null;
   }
 
-  const comingFromDirection = String(payload.direction10m); // Ensure it's a string
-  // The arrow should point where the wind is BLOWING TOWARDS.
+  const comingFromDirection = String(payload.direction10m);
   const blowingToDirection = getOppositeDirection(comingFromDirection);
-  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0; // Default to 0 if key not found
+  const targetBearing = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
+  
+  // Adjust rotation for the Navigation icon's default NW orientation (315 degrees).
+  const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
   const iconSize = 10; 
 
-  // Translate the <g> so that (cx, cy) becomes the center point FOR the icon.
-  // The icon itself is iconSize x iconSize. Its top-left will be at this new origin.
   return (
     <g transform={`translate(${cx - iconSize / 2}, ${cy - iconSize / 2})`}>
       <Navigation
         className="text-primary opacity-50"
         style={{
-          transform: `rotate(${rotationDegrees}deg)`,
-          transformOrigin: `${iconSize / 2}px ${iconSize / 2}px` // Rotate around the icon's center
+          transform: `rotate(${cssRotation}deg)`,
+          transformOrigin: `${iconSize / 2}px ${iconSize / 2}px`
         }}
         width={iconSize}
         height={iconSize}
@@ -107,14 +105,11 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
   const speeds = data.map(d => d.speed10m);
   const minSpeed = Math.min(...speeds);
   const maxSpeed = Math.max(...speeds);
-  // Adjust Y-axis domain to provide some padding
   const yDomain: [number, number] = [
     Math.max(0, Math.floor(minSpeed / 5) * 5 - 5), 
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
-  // Adjust X-axis interval based on data length to avoid clutter
-  // Approx 1 tick per day (12 2-hr intervals per day)
   const xAxisInterval = data.length > 24 ? Math.floor(data.length / 10 / 12) * 12 -1 : (data.length > 12 ? 11 : 0);
 
 
