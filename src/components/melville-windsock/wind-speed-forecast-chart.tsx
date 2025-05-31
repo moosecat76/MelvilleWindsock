@@ -4,11 +4,11 @@
 import type { WeatherDataPoint } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label, ReferenceLine } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
 import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES, DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING } from '@/lib/weather-utils';
-import { format, startOfDay, addDays } from 'date-fns';
+import { format } from 'date-fns';
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -118,25 +118,6 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
 
   const xAxisInterval = data.length > 24 ? Math.floor(data.length / 10 / 12) * 12 -1 : (data.length > 12 ? 11 : 0);
 
-  const dayReferenceLines = React.useMemo(() => {
-    if (!data || data.length < 2) {
-      return [];
-    }
-    const lines: Date[] = [];
-    const firstDataPointDate = data[0].dateTime;
-    const lastDataPointDate = data[data.length - 1].dateTime;
-
-    let currentMarkerDate = startOfDay(addDays(firstDataPointDate, 1));
-
-    while (currentMarkerDate.getTime() <= startOfDay(lastDataPointDate).getTime()) {
-      if (currentMarkerDate.getTime() > firstDataPointDate.getTime()) {
-         lines.push(new Date(currentMarkerDate));
-      }
-      currentMarkerDate = addDays(currentMarkerDate, 1);
-    }
-    return lines;
-  }, [data]);
-
 
   return (
     <Card className="shadow-lg">
@@ -168,9 +149,6 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 tickMargin={8}
                 interval={xAxisInterval} 
                 tickFormatter={(value: Date) => format(value, "MMM d")} 
-                type="number" // Important for time-based data
-                scale="time"  // Important for time-based data
-                domain={['dataMin', 'dataMax']} // Ensure X-axis spans the data
               />
               <YAxis
                 tickLine={false}
@@ -187,14 +165,6 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                   dy={60} 
                 />
               </YAxis>
-              {dayReferenceLines.map((date, index) => (
-                <ReferenceLine
-                  key={`day-line-${index}`}
-                  x={date.getTime()} // ReferenceLine x prop uses the numerical value (timestamp)
-                  stroke="hsl(var(--border))"
-                  strokeDasharray="3 3"
-                />
-              ))}
               <ChartTooltip
                 cursor={true}
                 content={<CustomTooltipContent />}
