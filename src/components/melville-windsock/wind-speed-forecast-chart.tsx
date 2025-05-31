@@ -4,11 +4,11 @@
 import type { WeatherDataPoint } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label, ReferenceLine } from 'recharts';
 import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
 import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES, DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING } from '@/lib/weather-utils';
-import { format } from 'date-fns';
+import { format, startOfDay, addDays } from 'date-fns';
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -64,8 +64,6 @@ const ForecastArrowDot = (props: any) => {
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const targetBearing = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
   
-  // cssRotation is the angle in degrees to rotate the icon.
-  // It's calculated based on the target bearing and the icon's default orientation.
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
   const iconSize = 20;
@@ -79,20 +77,14 @@ const ForecastArrowDot = (props: any) => {
     arrowColorClass = "text-green-500 opacity-75";
   }
 
-  // Apply transformations using SVG attributes on the <g> element:
-  // 1. Translate the group so its origin (0,0) is at the chart data point (cx, cy).
-  // 2. Rotate the group around this new origin by cssRotation.
-  // The <Navigation> icon is then drawn inside this transformed group.
-  // Its x and y attributes offset it by -iconSize/2, so the *center* of the icon
-  // is at the group's origin (0,0) *before* the rotation is applied.
   return (
     <g transform={`translate(${cx}, ${cy}) rotate(${cssRotation})`}>
       <Navigation
         className={arrowColorClass}
         width={iconSize}
         height={iconSize}
-        x={-iconSize / 2} // SVG x attribute to offset the icon
-        y={-iconSize / 2} // SVG y attribute to offset the icon
+        x={-iconSize / 2} 
+        y={-iconSize / 2} 
       />
     </g>
   );
@@ -126,6 +118,25 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
 
   const xAxisInterval = data.length > 24 ? Math.floor(data.length / 10 / 12) * 12 -1 : (data.length > 12 ? 11 : 0);
 
+  const dayReferenceLines = React.useMemo(() => {
+    if (!data || data.length < 2) {
+      return [];
+    }
+    const lines: Date[] = [];
+    const firstDataPointDate = data[0].dateTime;
+    const lastDataPointDate = data[data.length - 1].dateTime;
+
+    let currentMarkerDate = startOfDay(addDays(firstDataPointDate, 1));
+
+    while (currentMarkerDate.getTime() <= startOfDay(lastDataPointDate).getTime()) {
+      if (currentMarkerDate.getTime() > firstDataPointDate.getTime()) {
+         lines.push(new Date(currentMarkerDate));
+      }
+      currentMarkerDate = addDays(currentMarkerDate, 1);
+    }
+    return lines;
+  }, [data]);
+
 
   return (
     <Card className="shadow-lg">
@@ -157,6 +168,9 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 tickMargin={8}
                 interval={xAxisInterval} 
                 tickFormatter={(value: Date) => format(value, "MMM d")} 
+                type="number" // Important for time-based data
+                scale="time"  // Important for time-based data
+                domain={['dataMin', 'dataMax']} // Ensure X-axis spans the data
               />
               <YAxis
                 tickLine={false}
@@ -173,6 +187,14 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                   dy={60} 
                 />
               </YAxis>
+              {dayReferenceLines.map((date, index) => (
+                <ReferenceLine
+                  key={`day-line-${index}`}
+                  x={date.getTime()} // ReferenceLine x prop uses the numerical value (timestamp)
+                  stroke="hsl(var(--border))"
+                  strokeDasharray="3 3"
+                />
+              ))}
               <ChartTooltip
                 cursor={true}
                 content={<CustomTooltipContent />}
