@@ -9,12 +9,11 @@ export const COMPASS_DIRECTION_TO_DEGREES: { [key: string]: number } = {
   S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5,
 };
 
-// The lucide-react Navigation icon, when unrotated (transform: rotate(0deg)),
-// visually points towards ESE (East-South-East), which is 112.5 degrees.
-// This value is derived from observing that a CSS rotation of 202.5deg
-// (seen in inspector) results in a visual orientation of NW (315deg) on the chart.
-// (DEFAULT_BEARING + 202.5) % 360 = 315  => DEFAULT_BEARING = (315 - 202.5 + 360) % 360 = 112.5.
-export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 112.5;
+// This constant represents the default visual bearing of the lucide-react Navigation icon
+// when no CSS rotation is applied (i.e., style={{ transform: 'rotate(0deg)' }}).
+// Based on user feedback and iterative testing, 45.0 degrees (North-East)
+// was found to be the value that made the Current Wind Icon display correctly.
+export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 45.0;
 
 
 /**
@@ -51,4 +50,3 @@ export const getRandomDirectionFallback = (): string => {
     const randomIndex = Math.floor(Math.random() * windDirectionsFallback.length);
     return windDirectionsFallback[randomIndex];
 };
-
