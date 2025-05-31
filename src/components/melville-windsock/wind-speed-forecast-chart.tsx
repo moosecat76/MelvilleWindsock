@@ -64,29 +64,35 @@ const ForecastArrowDot = (props: any) => {
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const targetBearing = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
   
+  // cssRotation is the angle in degrees to rotate the icon.
+  // It's calculated based on the target bearing and the icon's default orientation.
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
-  const iconSize = 20; // Increased size
+  const iconSize = 20;
 
-  let arrowColorClass = "text-primary opacity-50"; // Default color & existing opacity
+  let arrowColorClass = "text-primary opacity-50";
   if (payload.speed10m < 12) {
-    arrowColorClass = "text-red-500 opacity-75"; // More opaque for red
+    arrowColorClass = "text-red-500 opacity-75";
   } else if (payload.speed10m >= 12 && payload.speed10m <= 20) {
-    arrowColorClass = "text-yellow-500 opacity-75"; // More opaque for yellow
+    arrowColorClass = "text-yellow-500 opacity-75";
   } else if (payload.speed10m > 20) {
-    arrowColorClass = "text-green-500 opacity-75"; // More opaque for green
+    arrowColorClass = "text-green-500 opacity-75";
   }
 
+  // Apply transformations using SVG attributes on the <g> element:
+  // 1. Translate the group so its origin (0,0) is at the chart data point (cx, cy).
+  // 2. Rotate the group around this new origin by cssRotation.
+  // The <Navigation> icon is then drawn inside this transformed group.
+  // Its x and y attributes offset it by -iconSize/2, so the *center* of the icon
+  // is at the group's origin (0,0) *before* the rotation is applied.
   return (
-    <g transform={`translate(${cx - iconSize / 2}, ${cy - iconSize / 2})`}>
+    <g transform={`translate(${cx}, ${cy}) rotate(${cssRotation})`}>
       <Navigation
         className={arrowColorClass}
-        style={{
-          transform: `rotate(${cssRotation}deg)`,
-          transformOrigin: `${iconSize / 2}px ${iconSize / 2}px`
-        }}
         width={iconSize}
         height={iconSize}
+        x={-iconSize / 2} // SVG x attribute to offset the icon
+        y={-iconSize / 2} // SVG y attribute to offset the icon
       />
     </g>
   );
@@ -194,3 +200,4 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
+
