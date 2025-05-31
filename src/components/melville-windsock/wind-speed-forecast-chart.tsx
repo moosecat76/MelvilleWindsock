@@ -3,7 +3,7 @@
 
 import type { WeatherDataPoint } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'; // ChartLegend and ChartLegendContent removed as not used for single series.
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
@@ -55,25 +55,29 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
 };
 
 // Custom Dot for rendering wind direction arrows on the chart
-const ForecastArrowDot = ({ cx, cy, payload }: any) => {
-  if (!payload || typeof payload.direction10m === 'undefined' || cx === null || cy === null) {
+const ForecastArrowDot = (props: any) => {
+  const { cx, cy, payload } = props;
+
+  if (!payload || typeof payload.direction10m === 'undefined' || cx == null || cy == null) {
     return null;
   }
 
-  const comingFromDirection = payload.direction10m;
+  const comingFromDirection = String(payload.direction10m); // Ensure it's a string
   // The arrow should point where the wind is BLOWING TOWARDS.
-  // The `direction10m` in payload is where it's COMING FROM.
   const blowingToDirection = getOppositeDirection(comingFromDirection);
-  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
+  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0; // Default to 0 if key not found
+  
   const iconSize = 10; // Reduced size for better visual density
 
   return (
     <g transform={`translate(${cx}, ${cy})`}>
       <Navigation
-        className="text-primary opacity-50"  // Slightly reduced opacity
+        className="text-primary opacity-50"
         style={{ transform: `rotate(${rotationDegrees}deg)` }}
         width={iconSize}
         height={iconSize}
+        // The icon's own center is at (0,0) for its coordinate system.
+        // To center it at (cx, cy), we need to translate it by -iconSize/2 in x and y relative to (cx,cy).
         transform={`translate(${-iconSize / 2}, ${-iconSize / 2})`} 
       />
     </g>
@@ -101,12 +105,16 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
   const speeds = data.map(d => d.speed10m);
   const minSpeed = Math.min(...speeds);
   const maxSpeed = Math.max(...speeds);
-  const yDomain = [
+  // Adjust Y-axis domain to provide some padding
+  const yDomain: [number, number] = [
     Math.max(0, Math.floor(minSpeed / 5) * 5 - 5), 
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
-  const xAxisInterval = data.length > 24 ? 11 : 0; // Show 1 tick per day approx (12 2-hr intervals per day)
+  // Adjust X-axis interval based on data length to avoid clutter
+  // Approx 1 tick per day (12 2-hr intervals per day)
+  const xAxisInterval = data.length > 24 ? Math.floor(data.length / 10 / 12) * 12 -1 : (data.length > 12 ? 11 : 0);
+
 
   return (
     <Card className="shadow-lg">
@@ -125,7 +133,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
               margin={{
                 top: 20, 
                 right: 20,
-                left: -10, 
+                left: -10, // Adjusted to bring Y-axis labels closer if needed
                 bottom: 5,
               }}
               accessibilityLayer
@@ -151,7 +159,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                   angle={-90}
                   position="insideLeft"
                   style={{ textAnchor: 'middle', fill: 'hsl(var(--foreground))' }}
-                  dy={60} 
+                  dy={60} // Adjust vertical position of label
                 />
               </YAxis>
               <ChartTooltip
@@ -170,11 +178,12 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 fill="url(#fillWindSpeed)"
                 stroke="hsl(var(--accent))"
                 strokeWidth={2}
-                name={chartConfig.windSpeed.label}
+                name={chartConfig.windSpeed.label} // Used by ChartLegend if present
                 dot={<ForecastArrowDot />}
                 activeDot={{ r: 6, style: { fill: "hsl(var(--accent))", stroke: "hsl(var(--background))", strokeWidth: 2 } }}
               />
-              <ChartLegend content={<ChartLegendContent />} />
+              {/* ChartLegend removed as it's not very useful for a single series area chart and saves space */}
+              {/* <ChartLegend content={<ChartLegendContent />} /> */}
             </AreaChart>
           </ResponsiveContainer>
         </ChartContainer>
