@@ -8,6 +8,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Labe
 import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
 import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
+import { format } from 'date-fns';
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -20,7 +21,7 @@ const chartConfig = {
   },
 };
 
-// Custom Tooltip Content to include direction
+// Custom Tooltip Content to include direction and formatted time
 const CustomTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload as WeatherDataPoint;
@@ -28,7 +29,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-1 gap-1.5">
-          <p className="text-sm font-medium text-foreground">{dataPoint.date}</p>
+          <p className="text-sm font-medium text-foreground">{format(dataPoint.dateTime, "MMM d, HH:mm")}</p>
           <div className="flex items-center">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5"
@@ -40,7 +41,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
           </div>
           <div className="flex items-center">
              <span
-              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent"
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Transparent spacer
             />
             <p className="text-sm text-muted-foreground">
               From: <span className="font-mono font-medium tabular-nums text-foreground">{comingFromDirection}</span>
@@ -56,19 +57,18 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
 // Custom Dot for rendering wind direction arrows on the chart
 const ForecastArrowDot = ({ cx, cy, payload }: any) => {
   if (!payload || typeof payload.direction === 'undefined' || cx === null || cy === null) {
-    // Don't render if data is incomplete or point is outside visible area (Recharts passes null for cx/cy then)
     return null;
   }
 
   const comingFromDirection = payload.direction;
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
-  const iconSize = 14;
+  const iconSize = 12; // Slightly smaller arrows due to increased density
 
   return (
     <g transform={`translate(${cx}, ${cy})`}>
       <Navigation
-        className="text-primary opacity-75"
+        className="text-primary opacity-60" // Reduced opacity for less visual clutter
         style={{ transform: `rotate(${rotationDegrees}deg)` }}
         width={iconSize}
         height={iconSize}
@@ -104,6 +104,9 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
+  // Assuming 12 data points per day (2-hourly over 24 hours)
+  const xAxisInterval = data.length > 24 ? 11 : 0; // Show tick ~once a day if enough data
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -111,15 +114,15 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
           <TrendingUp className="mr-2 h-6 w-6 text-primary" />
           10-Day Wind Forecast
         </CardTitle>
-        <CardDescription>Predicted wind speed and direction (origin) for the next 10 days at Melville Waters.</CardDescription>
+        <CardDescription>Predicted 2-hourly wind speed and direction (origin) for the next 10 days at Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <ChartContainer config={chartConfig} className="h-[350px] w-full"> {/* Increased height for more data */}
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
               margin={{
-                top: 15, // Increased top margin for arrow space
+                top: 20, // Increased top margin for arrow space
                 right: 20,
                 left: -10, 
                 bottom: 5,
@@ -128,11 +131,12 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
-                dataKey="date"
+                dataKey="dateTime"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 6)} 
+                interval={xAxisInterval} // Show roughly one tick per day (12th point if 2-hourly)
+                tickFormatter={(value: Date) => format(value, "MMM d")} 
               />
               <YAxis
                 tickLine={false}
@@ -177,4 +181,3 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
-
