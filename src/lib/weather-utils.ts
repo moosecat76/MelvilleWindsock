@@ -9,7 +9,7 @@ export const COMPASS_DIRECTION_TO_DEGREES: { [key: string]: number } = {
   S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5,
 };
 
-// The lucide-react Navigation icon points North by default.
+// The lucide-react Navigation icon points North (0 degrees) by default.
 export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 0;
 
 
@@ -21,7 +21,6 @@ export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 0;
 export function getOppositeDirection(direction: string): string {
   const index = WIND_DIRECTIONS_ARRAY.indexOf(direction);
   if (index === -1) {
-    // console.warn(`Invalid wind direction for opposite calculation: ${direction}`);
     return direction;
   }
   const oppositeIndex = (index + WIND_DIRECTIONS_ARRAY.length / 2) % WIND_DIRECTIONS_ARRAY.length;
@@ -38,8 +37,6 @@ export function degreesToCardinal(degrees: number): string {
   // Each of the 16 directions covers 360/16 = 22.5 degrees.
   // We add 0.5 * 22.5 = 11.25 to the degrees to center the "slice" for each direction,
   // then divide by 22.5 to get the index.
-  // Example: N is 0 degrees. Range is 348.75 - 11.25. (0 + 11.25)/22.5 = 0.5 -> index 0 (N)
-  // Example: NNE is 22.5 degrees. Range is 11.25 - 33.75. (22.5 + 11.25)/22.5 = 1.5 -> index 1 (NNE)
   const index = Math.floor(((normalizedDegrees + 11.25) % 360) / 22.5);
   return WIND_DIRECTIONS_ARRAY[index];
 }
@@ -50,4 +47,3 @@ export const getRandomDirectionFallback = (): string => {
     const randomIndex = Math.floor(Math.random() * windDirectionsFallback.length);
     return windDirectionsFallback[randomIndex];
 };
-

@@ -14,7 +14,7 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
   // targetBearing is the compass direction the arrow should visually point.
   const targetBearing = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
 
-  // Adjust rotation for the Navigation icon's default NW orientation (315 degrees).
+  // Adjust rotation for the Navigation icon's default bearing.
   // cssRotation is the actual degrees value to put in the style.
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
 
