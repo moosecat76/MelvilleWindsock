@@ -5,9 +5,9 @@ import type { WeatherDataPoint } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
-// Removed getWindOriginDirection as data.direction is now consistently "coming from"
+import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -23,9 +23,8 @@ const chartConfig = {
 // Custom Tooltip Content to include direction
 const CustomTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const dataPoint = payload[0].payload as WeatherDataPoint; // The full data object for this point
-    // dataPoint.direction is the direction the wind is COMING FROM
-    const comingFromDirection = dataPoint.direction; 
+    const dataPoint = payload[0].payload as WeatherDataPoint;
+    const comingFromDirection = dataPoint.direction;
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-1 gap-1.5">
@@ -41,7 +40,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
           </div>
           <div className="flex items-center">
              <span
-              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Placeholder for alignment
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent"
             />
             <p className="text-sm text-muted-foreground">
               From: <span className="font-mono font-medium tabular-nums text-foreground">{comingFromDirection}</span>
@@ -52,6 +51,31 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
     );
   }
   return null;
+};
+
+// Custom Dot for rendering wind direction arrows on the chart
+const ForecastArrowDot = ({ cx, cy, payload }: any) => {
+  if (!payload || typeof payload.direction === 'undefined' || cx === null || cy === null) {
+    // Don't render if data is incomplete or point is outside visible area (Recharts passes null for cx/cy then)
+    return null;
+  }
+
+  const comingFromDirection = payload.direction;
+  const blowingToDirection = getOppositeDirection(comingFromDirection);
+  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
+  const iconSize = 14;
+
+  return (
+    <g transform={`translate(${cx}, ${cy})`}>
+      <Navigation
+        className="text-primary opacity-75"
+        style={{ transform: `rotate(${rotationDegrees}deg)` }}
+        width={iconSize}
+        height={iconSize}
+        transform={`translate(${-iconSize / 2}, ${-iconSize / 2})`}
+      />
+    </g>
+  );
 };
 
 
@@ -95,7 +119,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
             <AreaChart
               data={data}
               margin={{
-                top: 5,
+                top: 15, // Increased top margin for arrow space
                 right: 20,
                 left: -10, 
                 bottom: 5,
@@ -141,9 +165,9 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 fill="url(#fillWindSpeed)"
                 stroke="hsl(var(--accent))"
                 strokeWidth={2}
-                name={chartConfig.windSpeed.label} // Used by legend
-                dot={false}
-                activeDot={{ r: 6, style: { fill: "hsl(var(--background))", stroke: "hsl(var(--accent))" } }}
+                name={chartConfig.windSpeed.label}
+                dot={<ForecastArrowDot />}
+                activeDot={{ r: 6, style: { fill: "hsl(var(--accent))", stroke: "hsl(var(--background))", strokeWidth: 2 } }}
               />
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
@@ -153,3 +177,4 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
+
