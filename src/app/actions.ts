@@ -5,7 +5,8 @@
 
 import { selectWeatherApi, type SelectWeatherApiInput } from '@/ai/flows/select-weather-api';
 import type { FullWeatherData, ApiDetails, WeatherDataPoint, CurrentWindInfo } from '@/types';
-import { addDays, format, addHours, startOfDay } from 'date-fns';
+import { degreesToCardinal } from '@/lib/weather-utils';
+import { format, addHours, startOfDay, addDays } from 'date-fns'; // addDays, startOfDay, addHours needed for fallback
 
 // Mock APIs matching the structure expected by selectWeatherApi flow
 const mockApis: ApiDetails[] = [
@@ -15,62 +16,79 @@ const mockApis: ApiDetails[] = [
   { name: "LocalSensorNet", description: "Hyperlocal sensor network data, very recent but can be noisy.", accuracy: 0.75, recency: 0.25, consistency: 0.70 },
 ];
 
+// For fallback data
 const windDirections = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
 const getRandomDirection = () => windDirections[Math.floor(Math.random() * windDirections.length)];
 
+
+const MELVILLE_LAT = -32.00;
+const MELVILLE_LON = 115.82;
+
 export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
+  let aiSelection = { selectedApiName: "AI Selector Placeholder", reasoning: "AI API selection process is part of the flow." };
   try {
     const input: SelectWeatherApiInput = { availableApis: mockApis };
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate AI call latency
-    const aiSelection = await selectWeatherApi(input);
+    await new Promise(resolve => setTimeout(resolve, 300)); // Simulate AI call latency
+    aiSelection = await selectWeatherApi(input);
+  } catch (aiError) {
+    console.warn("AI API selection failed:", aiError);
+    aiSelection.selectedApiName = "AI Selector Error";
+    aiSelection.reasoning = "Could not run the AI API selection process.";
+  }
+  
+  try {
+    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${MELVILLE_LAT}&longitude=${MELVILLE_LON}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&timeformat=unixtime&forecast_days=10`;
+    
+    const response = await fetch(openMeteoUrl, { next: { revalidate: 3600 } }); // Revalidate data every hour
+    if (!response.ok) {
+      throw new Error(`Open-Meteo API request failed with status ${response.status}`);
+    }
+    const data = await response.json();
 
-    const baseSpeed = 10 + Math.random() * 10;
+    if (!data.current || !data.hourly) {
+        throw new Error("Open-Meteo response missing current or hourly data.");
+    }
 
     const currentSpeed: CurrentWindInfo = {
-      speed10m: Math.max(0, Math.floor(baseSpeed + (Math.random() * 10 - 5))),
+      speed10m: Math.round(data.current.wind_speed_10m),
       unit: "km/h",
-      direction10m: getRandomDirection(),
+      direction10m: degreesToCardinal(data.current.wind_direction_10m),
     };
 
     const forecast: WeatherDataPoint[] = [];
-    const today = startOfDay(new Date());
+    const hourlyTimes = data.hourly.time;
+    const hourlySpeeds = data.hourly.wind_speed_10m;
+    const hourlyDirections = data.hourly.wind_direction_10m;
 
-    for (let dayIndex = 0; dayIndex < 10; dayIndex++) {
-      const currentDayBase = addDays(today, dayIndex);
-      for (let hourInterval = 0; hourInterval < 12; hourInterval++) { // 12 intervals of 2 hours
-        const dateTime = addHours(currentDayBase, hourInterval * 2);
-        
-        let intervalSpeed = baseSpeed + (Math.random() * 15 - 7.5) + (dayIndex * 0.2) + (hourInterval * 0.1);
-        intervalSpeed = Math.max(0, Math.min(40, intervalSpeed)); // Cap speed
+    // Open-Meteo provides hourly data. We need 2-hourly for 10 days.
+    // 10 days * 24 hours = 240 hourly points. We'll take every 2nd point for 120 2-hourly points.
+    for (let i = 0; i < hourlyTimes.length; i += 2) {
+      if (forecast.length >= 10 * 12) break; // Limit to 120 points (10 days * 12 2-hr intervals)
 
-        forecast.push({
-          dateTime: dateTime,
-          date: format(dateTime, "MMM d, HH:mm"), // For display or tooltip
-          fullDate: format(dateTime, "yyyy-MM-dd HH:mm:ss"), // For detailed reference
-          speed10m: Math.floor(intervalSpeed),
-          direction10m: getRandomDirection(),
-        });
-      }
+      const dateTime = new Date(hourlyTimes[i] * 1000);
+      forecast.push({
+        dateTime: dateTime,
+        speed10m: Math.round(hourlySpeeds[i]),
+        direction10m: degreesToCardinal(hourlyDirections[i]),
+      });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 700)); // Simulate weather data fetching latency
-
     return {
       currentSpeed,
       forecast,
-      selectedApiName: aiSelection.selectedApiName,
-      reasoning: aiSelection.reason,
+      selectedApiName: "Open-Meteo (Live)", // Override AI selection name for clarity if live data is fetched
+      reasoning: `Live data successfully fetched from Open-Meteo. ${aiSelection.reasoning}`,
     };
+
   } catch (error) {
-    console.error("Error fetching Melville winds data:", error);
+    console.error("Error fetching or processing live Melville winds data:", error);
+    // Fallback to a mock-like error structure
     const fallbackDate = new Date();
     const fallbackForecast: WeatherDataPoint[] = [];
     for (let i = 0; i < 10 * 12; i++) { // 10 days, 12 2-hour intervals
         const dateTime = addHours(addDays(startOfDay(fallbackDate), Math.floor(i/12)), (i%12)*2);
         fallbackForecast.push({
             dateTime: dateTime,
-            date: format(dateTime, "MMM d, HH:mm"),
-            fullDate: format(dateTime, "yyyy-MM-dd HH:mm:ss"),
             speed10m: 10 + Math.floor(Math.random() * 10),
             direction10m: getRandomDirection(),
         });
@@ -79,7 +97,8 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
       currentSpeed: { speed10m: 15, unit: "km/h", direction10m: "S" },
       forecast: fallbackForecast,
       selectedApiName: "Fallback Weather Service",
-      reasoning: "Could not connect to the intelligent API selector or fetch live data. Displaying estimates.",
+      reasoning: `Could not fetch live data from Open-Meteo (${error.message}). Displaying estimates. Original AI reason: ${aiSelection.reasoning}`,
     };
   }
 }
+

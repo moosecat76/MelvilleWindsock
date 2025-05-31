@@ -56,7 +56,7 @@ export function ForecastTable({ data }: ForecastTableProps) {
             </TableHeader>
             <TableBody>
               {data.map((item) => (
-                <TableRow key={item.fullDate}>
+                <TableRow key={item.dateTime.toISOString()}>
                   <TableCell className="font-medium">{format(item.dateTime, "MMM d, HH:mm")}</TableCell>
                   <TableCell className="text-right">{item.speed10m}</TableCell>
                   <TableCell className="text-center">{item.direction10m}</TableCell>
@@ -69,3 +69,4 @@ export function ForecastTable({ data }: ForecastTableProps) {
     </Card>
   );
 }
+
