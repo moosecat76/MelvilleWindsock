@@ -28,7 +28,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-1 gap-1.5">
-          <p className="text-sm font-medium text-foreground">{format(dataPoint.dateTime, "MMM d, HH:mm")}</p>
+          <p className="text-sm font-medium text-foreground">{format(dataPoint.dateTime, "EEE, MMM d, HH:mm")}</p>
           <div className="flex items-center">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5"
@@ -116,7 +116,9 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
-  const xAxisInterval = data.length > 24 ? Math.floor(data.length / 10 / 12) * 12 -1 : (data.length > 12 ? 11 : 0);
+  // Assuming 2-hourly data, 12 data points per day.
+  // interval={11} will show a tick for every 12th data point (i.e., once per day).
+  const xAxisInterval = data.length > 12 ? 11 : 0;
 
 
   return (
@@ -148,7 +150,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 axisLine={false}
                 tickMargin={8}
                 interval={xAxisInterval} 
-                tickFormatter={(value: Date) => format(value, "MMM d")} 
+                tickFormatter={(value: Date) => format(value, "EEE, MMM d")} 
               />
               <YAxis
                 tickLine={false}
