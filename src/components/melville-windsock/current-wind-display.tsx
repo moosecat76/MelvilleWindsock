@@ -2,15 +2,18 @@
 import type { CurrentWindInfo } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gauge, MapPin, Navigation } from 'lucide-react';
-import { getWindOriginDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
+import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
 
 interface CurrentWindDisplayProps {
   data: CurrentWindInfo;
 }
 
 export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
-  const windOrigin = getWindOriginDirection(data.direction);
-  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[windOrigin] ?? 0;
+  // data.direction is the direction the wind is COMING FROM (e.g., "N")
+  const comingFromDirection = data.direction;
+  // The arrow should point where the wind is BLOWING TOWARDS
+  const blowingToDirection = getOppositeDirection(comingFromDirection);
+  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
 
   return (
     <Card className="shadow-lg">
@@ -39,7 +42,7 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
             style={{ transform: `rotate(${rotationDegrees}deg)` }}
           />
           <p className="text-2xl font-bold text-primary font-headline">
-            {windOrigin}
+            {comingFromDirection}
           </p>
           <p className="text-sm text-muted-foreground">Direction (from)</p>
         </div>

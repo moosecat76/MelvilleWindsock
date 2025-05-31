@@ -7,7 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import React from 'react';
-import { getWindOriginDirection } from '@/lib/weather-utils';
+// Removed getWindOriginDirection as data.direction is now consistently "coming from"
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -24,7 +24,8 @@ const chartConfig = {
 const CustomTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload as WeatherDataPoint; // The full data object for this point
-    const windOrigin = getWindOriginDirection(dataPoint.direction);
+    // dataPoint.direction is the direction the wind is COMING FROM
+    const comingFromDirection = dataPoint.direction; 
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-1 gap-1.5">
@@ -43,7 +44,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
               className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Placeholder for alignment
             />
             <p className="text-sm text-muted-foreground">
-              From: <span className="font-mono font-medium tabular-nums text-foreground">{windOrigin}</span>
+              From: <span className="font-mono font-medium tabular-nums text-foreground">{comingFromDirection}</span>
             </p>
           </div>
         </div>
@@ -152,4 +153,3 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
-

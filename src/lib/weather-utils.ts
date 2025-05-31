@@ -10,16 +10,17 @@ export const COMPASS_DIRECTION_TO_DEGREES: { [key: string]: number } = {
 };
 
 /**
- * Calculates the direction the wind is coming from, given the direction it's blowing towards.
- * @param blowingToDirection The direction the wind is blowing towards (e.g., "NNE").
- * @returns The direction the wind is coming from (e.g., "SSW").
+ * Calculates the opposite compass direction.
+ * @param direction The input compass direction (e.g., "NNE", representing where wind is coming FROM or blowing TOWARDS).
+ * @returns The opposite compass direction (e.g., "SSW").
  */
-export function getWindOriginDirection(blowingToDirection: string): string {
-  const index = WIND_DIRECTIONS_ARRAY.indexOf(blowingToDirection);
+export function getOppositeDirection(direction: string): string {
+  const index = WIND_DIRECTIONS_ARRAY.indexOf(direction);
   if (index === -1) {
-    console.warn(`Invalid wind direction: ${blowingToDirection}`);
-    return blowingToDirection; // Return original if not found, though this shouldn't happen with valid data
+    console.warn(`Invalid wind direction: ${direction}`);
+    return direction; // Return original if not found
   }
-  const oppositeIndex = (index + 8) % 16; // 8 positions = 180 degrees opposite
+  // For a 16-point compass, opposite is 8 positions away
+  const oppositeIndex = (index + WIND_DIRECTIONS_ARRAY.length / 2) % WIND_DIRECTIONS_ARRAY.length;
   return WIND_DIRECTIONS_ARRAY[oppositeIndex];
 }
