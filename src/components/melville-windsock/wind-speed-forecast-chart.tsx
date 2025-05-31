@@ -61,18 +61,20 @@ const ForecastArrowDot = ({ cx, cy, payload }: any) => {
   }
 
   const comingFromDirection = payload.direction;
+  // The arrow should point where the wind is BLOWING TOWARDS.
+  // The `direction` in payload is where it's COMING FROM.
   const blowingToDirection = getOppositeDirection(comingFromDirection);
   const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[blowingToDirection] ?? 0;
-  const iconSize = 12; // Slightly smaller arrows due to increased density
+  const iconSize = 12; 
 
   return (
     <g transform={`translate(${cx}, ${cy})`}>
       <Navigation
-        className="text-primary opacity-60" // Reduced opacity for less visual clutter
+        className="text-primary opacity-60" 
         style={{ transform: `rotate(${rotationDegrees}deg)` }}
         width={iconSize}
         height={iconSize}
-        transform={`translate(${-iconSize / 2}, ${-iconSize / 2})`}
+        transform={`translate(${-iconSize / 2}, ${-iconSize / 2})`} 
       />
     </g>
   );
@@ -104,8 +106,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
-  // Assuming 12 data points per day (2-hourly over 24 hours)
-  const xAxisInterval = data.length > 24 ? 11 : 0; // Show tick ~once a day if enough data
+  const xAxisInterval = data.length > 24 ? 11 : 0; 
 
   return (
     <Card className="shadow-lg">
@@ -117,12 +118,12 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
         <CardDescription>Predicted 2-hourly wind speed and direction (origin) for the next 10 days at Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[350px] w-full"> {/* Increased height for more data */}
+        <ChartContainer config={chartConfig} className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
               margin={{
-                top: 20, // Increased top margin for arrow space
+                top: 20, 
                 right: 20,
                 left: -10, 
                 bottom: 5,
@@ -135,7 +136,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                interval={xAxisInterval} // Show roughly one tick per day (12th point if 2-hourly)
+                interval={xAxisInterval} 
                 tickFormatter={(value: Date) => format(value, "MMM d")} 
               />
               <YAxis
