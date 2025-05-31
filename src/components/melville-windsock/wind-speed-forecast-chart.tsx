@@ -7,6 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import React from 'react';
+import { getWindOriginDirection } from '@/lib/weather-utils';
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -23,6 +24,7 @@ const chartConfig = {
 const CustomTooltipContent = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const dataPoint = payload[0].payload as WeatherDataPoint; // The full data object for this point
+    const windOrigin = getWindOriginDirection(dataPoint.direction);
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm">
         <div className="grid grid-cols-1 gap-1.5">
@@ -41,7 +43,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
               className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Placeholder for alignment
             />
             <p className="text-sm text-muted-foreground">
-              Direction: <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.direction}</span>
+              From: <span className="font-mono font-medium tabular-nums text-foreground">{windOrigin}</span>
             </p>
           </div>
         </div>
@@ -84,7 +86,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
           <TrendingUp className="mr-2 h-6 w-6 text-primary" />
           10-Day Wind Forecast
         </CardTitle>
-        <CardDescription>Predicted wind speed and direction for the next 10 days at Melville Waters.</CardDescription>
+        <CardDescription>Predicted wind speed and direction (origin) for the next 10 days at Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -150,3 +152,4 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
+

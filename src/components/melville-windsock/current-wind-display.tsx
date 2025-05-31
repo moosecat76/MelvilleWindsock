@@ -2,12 +2,16 @@
 import type { CurrentWindInfo } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Gauge, MapPin, Navigation } from 'lucide-react';
+import { getWindOriginDirection, COMPASS_DIRECTION_TO_DEGREES } from '@/lib/weather-utils';
 
 interface CurrentWindDisplayProps {
   data: CurrentWindInfo;
 }
 
 export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
+  const windOrigin = getWindOriginDirection(data.direction);
+  const rotationDegrees = COMPASS_DIRECTION_TO_DEGREES[windOrigin] ?? 0;
+
   return (
     <Card className="shadow-lg">
       <CardHeader className="pb-2">
@@ -30,11 +34,14 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
           </div>
         </div>
         <div className="flex flex-col items-end text-right">
-          <Navigation className="h-8 w-8 text-primary mb-1" />
+          <Navigation
+            className="h-8 w-8 text-primary mb-1"
+            style={{ transform: `rotate(${rotationDegrees}deg)` }}
+          />
           <p className="text-2xl font-bold text-primary font-headline">
-            {data.direction}
+            {windOrigin}
           </p>
-          <p className="text-sm text-muted-foreground">Direction</p>
+          <p className="text-sm text-muted-foreground">Direction (from)</p>
         </div>
       </CardContent>
     </Card>
