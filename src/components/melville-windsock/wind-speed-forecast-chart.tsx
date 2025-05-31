@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { WeatherDataPoint } from '@/types';
@@ -5,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+import React from 'react';
 
 interface WindSpeedForecastChartProps {
   data: WeatherDataPoint[];
@@ -16,6 +18,39 @@ const chartConfig = {
     color: "hsl(var(--accent))",
   },
 };
+
+// Custom Tooltip Content to include direction
+const CustomTooltipContent = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const dataPoint = payload[0].payload as WeatherDataPoint; // The full data object for this point
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-1 gap-1.5">
+          <p className="text-sm font-medium text-foreground">{dataPoint.date}</p>
+          <div className="flex items-center">
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5"
+              style={{ backgroundColor: chartConfig.windSpeed.color }}
+            />
+            <p className="text-sm text-muted-foreground">
+              Speed: <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.speed} km/h</span>
+            </p>
+          </div>
+          <div className="flex items-center">
+             <span
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Placeholder for alignment
+            />
+            <p className="text-sm text-muted-foreground">
+              Direction: <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.direction}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 
 export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
   if (!data || data.length === 0) {
@@ -34,15 +69,13 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     );
   }
   
-  // Find min and max speed for Y-axis domain
   const speeds = data.map(d => d.speed);
   const minSpeed = Math.min(...speeds);
   const maxSpeed = Math.max(...speeds);
   const yDomain = [
-    Math.max(0, Math.floor(minSpeed / 5) * 5 - 5), // a bit below min, multiple of 5, at least 0
-    Math.ceil(maxSpeed / 5) * 5 + 5      // a bit above max, multiple of 5
+    Math.max(0, Math.floor(minSpeed / 5) * 5 - 5), 
+    Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
-
 
   return (
     <Card className="shadow-lg">
@@ -51,7 +84,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
           <TrendingUp className="mr-2 h-6 w-6 text-primary" />
           10-Day Wind Forecast
         </CardTitle>
-        <CardDescription>Predicted wind speed for the next 10 days at Melville Waters.</CardDescription>
+        <CardDescription>Predicted wind speed and direction for the next 10 days at Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -61,7 +94,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
               margin={{
                 top: 5,
                 right: 20,
-                left: -10, // Adjust to make Y-axis labels visible
+                left: -10, 
                 bottom: 5,
               }}
               accessibilityLayer
@@ -72,7 +105,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 6)} // Shorten date string if needed
+                tickFormatter={(value) => value.slice(0, 6)} 
               />
               <YAxis
                 tickLine={false}
@@ -86,12 +119,12 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                   angle={-90}
                   position="insideLeft"
                   style={{ textAnchor: 'middle', fill: 'hsl(var(--foreground))' }}
-                  dy={40} // Adjust position from axis
+                  dy={40} 
                 />
               </YAxis>
               <ChartTooltip
                 cursor={true}
-                content={<ChartTooltipContent indicator="line" />}
+                content={<CustomTooltipContent />}
               />
               <defs>
                 <linearGradient id="fillWindSpeed" x1="0" y1="0" x2="0" y2="1">
@@ -105,7 +138,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 fill="url(#fillWindSpeed)"
                 stroke="hsl(var(--accent))"
                 strokeWidth={2}
-                name="Wind Speed"
+                name={chartConfig.windSpeed.label} // Used by legend
                 dot={false}
                 activeDot={{ r: 6, style: { fill: "hsl(var(--background))", stroke: "hsl(var(--accent))" } }}
               />

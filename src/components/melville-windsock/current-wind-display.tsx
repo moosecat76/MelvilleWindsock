@@ -1,6 +1,7 @@
+
 import type { CurrentWindInfo } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gauge, MapPin } from 'lucide-react';
+import { Gauge, MapPin, Navigation } from 'lucide-react';
 
 interface CurrentWindDisplayProps {
   data: CurrentWindInfo;
@@ -18,13 +19,22 @@ export function CurrentWindDisplay({ data }: CurrentWindDisplayProps) {
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex items-center space-x-4">
-        <Gauge className="h-16 w-16 text-accent" />
-        <div>
-          <p className="text-6xl font-bold text-accent font-headline">
-            {data.speed}
+      <CardContent className="flex items-start justify-between space-x-4">
+        <div className="flex items-center space-x-4">
+          <Gauge className="h-16 w-16 text-accent" />
+          <div>
+            <p className="text-6xl font-bold text-accent font-headline">
+              {data.speed}
+            </p>
+            <p className="text-2xl text-muted-foreground">{data.unit}</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-end text-right">
+          <Navigation className="h-8 w-8 text-primary mb-1" />
+          <p className="text-2xl font-bold text-primary font-headline">
+            {data.direction}
           </p>
-          <p className="text-2xl text-muted-foreground">{data.unit}</p>
+          <p className="text-sm text-muted-foreground">Direction</p>
         </div>
       </CardContent>
     </Card>
