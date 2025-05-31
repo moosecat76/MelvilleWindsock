@@ -9,8 +9,9 @@ export const COMPASS_DIRECTION_TO_DEGREES: { [key: string]: number } = {
   S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5,
 };
 
-// The lucide-react Navigation icon points North (0 degrees) by default.
-export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 0;
+// The lucide-react Navigation icon, when unrotated (transform: rotate(0deg)),
+// visually points towards South-East (SE), which is 135 degrees.
+export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 135;
 
 
 /**
@@ -21,7 +22,7 @@ export const DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING = 0;
 export function getOppositeDirection(direction: string): string {
   const index = WIND_DIRECTIONS_ARRAY.indexOf(direction);
   if (index === -1) {
-    return direction;
+    return direction; // Should not happen with valid inputs
   }
   const oppositeIndex = (index + WIND_DIRECTIONS_ARRAY.length / 2) % WIND_DIRECTIONS_ARRAY.length;
   return WIND_DIRECTIONS_ARRAY[oppositeIndex];
@@ -47,3 +48,4 @@ export const getRandomDirectionFallback = (): string => {
     const randomIndex = Math.floor(Math.random() * windDirectionsFallback.length);
     return windDirectionsFallback[randomIndex];
 };
+
