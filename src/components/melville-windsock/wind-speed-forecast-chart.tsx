@@ -16,7 +16,7 @@ interface WindSpeedForecastChartProps {
 
 const chartConfig = {
   windSpeed: {
-    label: "Wind Speed (10m) (km/h)",
+    label: "Wind Speed (10m) (kn)",
     color: "hsl(var(--accent))",
   },
 };
@@ -36,7 +36,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
               style={{ backgroundColor: chartConfig.windSpeed.color }}
             />
             <p className="text-sm text-muted-foreground">
-              Speed (10m): <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.speed10m} km/h</span>
+              Speed (10m): <span className="font-mono font-medium tabular-nums text-foreground">{dataPoint.speed10m} kn</span>
             </p>
           </div>
           <div className="flex items-center">
@@ -147,7 +147,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
                 tickFormatter={(value) => `${value}`}
               >
                 <Label
-                  value="Wind Speed (10m) (km/h)"
+                  value="Wind Speed (10m) (kn)"
                   angle={-90}
                   position="insideLeft"
                   style={{ textAnchor: 'middle', fill: 'hsl(var(--foreground))' }}
@@ -182,3 +182,4 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
+

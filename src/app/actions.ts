@@ -37,7 +37,7 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
   }
   
   try {
-    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${MELVILLE_LAT}&longitude=${MELVILLE_LON}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&timeformat=unixtime&forecast_days=10`;
+    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${MELVILLE_LAT}&longitude=${MELVILLE_LON}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timeformat=unixtime&forecast_days=10`;
     
     const response = await fetch(openMeteoUrl, { next: { revalidate: 3600 } }); // Revalidate data every hour
     if (!response.ok) {
@@ -51,7 +51,7 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
 
     const currentSpeed: CurrentWindInfo = {
       speed10m: Math.round(data.current.wind_speed_10m),
-      unit: "km/h",
+      unit: "kn",
       direction10m: degreesToCardinal(data.current.wind_direction_10m),
     };
 
@@ -89,12 +89,12 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
         const dateTime = addHours(addDays(startOfDay(fallbackDate), Math.floor(i/12)), (i%12)*2);
         fallbackForecast.push({
             dateTime: dateTime,
-            speed10m: 10 + Math.floor(Math.random() * 10),
+            speed10m: 10 + Math.floor(Math.random() * 10), // Speed in knots
             direction10m: getRandomDirection(),
         });
     }
     return {
-      currentSpeed: { speed10m: 15, unit: "km/h", direction10m: "S" },
+      currentSpeed: { speed10m: 15, unit: "kn", direction10m: "S" },
       forecast: fallbackForecast,
       selectedApiName: "Fallback Weather Service",
       reasoning: `Could not fetch live data from Open-Meteo (${error.message}). Displaying estimates. Original AI reason: ${aiSelection.reasoning}`,

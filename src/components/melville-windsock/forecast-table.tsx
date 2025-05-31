@@ -50,7 +50,7 @@ export function ForecastTable({ data }: ForecastTableProps) {
             <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow>
                 <TableHead className="w-[180px]">Date & Time</TableHead>
-                <TableHead className="text-right">Speed (10m) (km/h)</TableHead>
+                <TableHead className="text-right">Speed (10m) (kn)</TableHead>
                 <TableHead className="text-center">Direction (10m) (from)</TableHead>
               </TableRow>
             </TableHeader>
