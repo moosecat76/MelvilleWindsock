@@ -67,7 +67,7 @@ const ForecastArrowDot = (props: any) => {
   
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
-  const iconSize = 16; // Reduced size for better fit as a dot
+  const iconSize = 16; 
 
   let arrowColorClass = "text-primary opacity-75"; 
   if (payload.speed10m < 12) {
@@ -97,8 +97,8 @@ const CustomXAxisTick = (props: any) => {
     return null;
   }
   const date = payload.value;
-  const dayOfWeek = format(date, "EEE"); // e.g., "Mon"
-  const dayOfMonthWithSuffix = format(date, "do"); // e.g., "4th"
+  const dayOfWeek = format(date, "EEE"); 
+  const dayOfMonthWithSuffix = format(date, "do"); 
 
   return (
     <g transform={`translate(${x},${y})`}>
@@ -149,22 +149,18 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
        yMin = Math.max(0, minSpeed - 5);
        yMax = maxSpeed + 5;
     }
-     if (yMin === 0 && yMax === 5 && minSpeed === 0 && maxSpeed === 0) { // All speeds are 0, yMin might be -5
+     if (yMin === 0 && yMax === 5 && minSpeed === 0 && maxSpeed === 0) { 
         yMin = 0;
         yMax = 5; 
-    } else if (yMin < 0 && minSpeed === 0) { // Ensure yMin is not negative if actual minSpeed is 0
+    } else if (yMin < 0 && minSpeed === 0) { 
         yMin = 0;
     }
-
-
   } else if (hourlyData.length > 0 && validSpeeds.length === 0) {
      yMin = 0;
      yMax = 25;
   }
   
   const yDomain: [number, number] = [yMin, yMax];
-
-  // Assuming 2-hourly data (12 data points per day), interval of 11 shows a tick roughly every day.
   const xAxisInterval = 11; 
 
 
@@ -213,7 +209,7 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
                 top: 20, 
                 right: 20,
                 left: -10, 
-                bottom: 20, // Increased bottom margin for two-line X-axis ticks
+                bottom: 20, 
               }}
               accessibilityLayer
             >
@@ -222,7 +218,7 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
                 dataKey="dateTime"
                 tickLine={false}
                 axisLine={false}
-                tickMargin={10} // Adjusted margin for custom tick
+                tickMargin={10} 
                 interval={xAxisInterval} 
                 tick={<CustomXAxisTick />}
               />
