@@ -1,3 +1,4 @@
+
 import { Wind } from 'lucide-react';
 
 export function AppHeader() {
@@ -10,7 +11,7 @@ export function AppHeader() {
         </h1>
       </div>
       <p className="mt-1 text-lg text-muted-foreground">
-        Your 10-day wind speed forecast for Melville Waters, WA.
+        Your 5-day wind speed forecast for Melville Waters, WA.
       </p>
     </header>
   );

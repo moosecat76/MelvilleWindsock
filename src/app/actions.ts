@@ -23,6 +23,7 @@ const getRandomDirection = () => windDirections[Math.floor(Math.random() * windD
 
 const MELVILLE_LAT = -32.00;
 const MELVILLE_LON = 115.82;
+const FORECAST_DAYS = 5; // Changed from 10 to 5
 
 export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
   let aiSelection = { selectedApiName: "AI Selector Placeholder", reasoning: "AI API selection process is part of the flow." };
@@ -37,7 +38,7 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
   }
   
   try {
-    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${MELVILLE_LAT}&longitude=${MELVILLE_LON}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timeformat=unixtime&forecast_days=10`;
+    const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${MELVILLE_LAT}&longitude=${MELVILLE_LON}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timeformat=unixtime&forecast_days=${FORECAST_DAYS}`;
     
     const response = await fetch(openMeteoUrl, { next: { revalidate: 3600 } }); // Revalidate data every hour
     if (!response.ok) {
@@ -60,10 +61,10 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
     const hourlySpeeds = data.hourly.wind_speed_10m;
     const hourlyDirections = data.hourly.wind_direction_10m;
 
-    // Open-Meteo provides hourly data. We need 2-hourly for 10 days.
-    // 10 days * 24 hours = 240 hourly points. We'll take every 2nd point for 120 2-hourly points.
+    // Open-Meteo provides hourly data. We need 2-hourly for FORECAST_DAYS.
+    // FORECAST_DAYS * 24 hours = total hourly points. We'll take every 2nd point for 12 2-hourly points per day.
     for (let i = 0; i < hourlyTimes.length; i += 2) {
-      if (forecast.length >= 10 * 12) break; // Limit to 120 points (10 days * 12 2-hr intervals)
+      if (forecast.length >= FORECAST_DAYS * 12) break; // Limit to points for FORECAST_DAYS
 
       const dateTime = new Date(hourlyTimes[i] * 1000);
       forecast.push({
@@ -85,7 +86,7 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
     // Fallback to a mock-like error structure
     const fallbackDate = new Date();
     const fallbackForecast: WeatherDataPoint[] = [];
-    for (let i = 0; i < 10 * 12; i++) { // 10 days, 12 2-hour intervals
+    for (let i = 0; i < FORECAST_DAYS * 12; i++) { // FORECAST_DAYS, 12 2-hour intervals
         const dateTime = addHours(addDays(startOfDay(fallbackDate), Math.floor(i/12)), (i%12)*2);
         fallbackForecast.push({
             dateTime: dateTime,

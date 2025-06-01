@@ -40,7 +40,7 @@ export function ForecastTable({ data }: ForecastTableProps) {
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
           <List className="mr-2 h-6 w-6 text-primary" />
-          Detailed 10-Day Forecast (10m)
+          Detailed 5-Day Forecast (10m)
         </CardTitle>
         <CardDescription>2-hourly wind speed and direction (origin) predictions at 10m height for Melville Waters.</CardDescription>
       </CardHeader>

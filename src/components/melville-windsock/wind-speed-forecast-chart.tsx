@@ -66,9 +66,9 @@ const ForecastArrowDot = (props: any) => {
   
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
-  const iconSize = 20;
+  const iconSize = 20 * 2; // Increased size
 
-  let arrowColorClass = "text-primary opacity-50";
+  let arrowColorClass = "text-primary opacity-75"; // Increased opacity
   if (payload.speed10m < 12) {
     arrowColorClass = "text-red-500 opacity-75";
   } else if (payload.speed10m >= 12 && payload.speed10m <= 20) {
@@ -98,7 +98,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
         <CardHeader>
           <CardTitle className="text-xl font-headline flex items-center">
             <TrendingUp className="mr-2 h-6 w-6 text-primary" />
-            10-Day Wind Forecast (10m)
+            5-Day Wind Forecast (10m)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -126,9 +126,9 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
       <CardHeader>
         <CardTitle className="text-xl font-headline flex items-center">
           <TrendingUp className="mr-2 h-6 w-6 text-primary" />
-          10-Day Wind Forecast (10m)
+          5-Day Wind Forecast (10m)
         </CardTitle>
-        <CardDescription>Predicted 2-hourly wind speed and direction (origin) at 10m height for the next 10 days at Melville Waters.</CardDescription>
+        <CardDescription>Predicted 2-hourly wind speed and direction (origin) at 10m height for the next 5 days at Melville Waters.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
