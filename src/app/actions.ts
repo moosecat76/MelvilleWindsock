@@ -6,7 +6,7 @@
 import { selectWeatherApi, type SelectWeatherApiInput } from '@/ai/flows/select-weather-api';
 import type { FullWeatherData, ApiDetails, WeatherDataPoint, CurrentWindInfo, DailyForecastSummary } from '@/types';
 import { degreesToCardinal, getRandomDirectionFallback as getRandomDirection } from '@/lib/weather-utils';
-import { format, addHours, startOfDay, addDays, parseISO } from 'date-fns';
+import { format, addHours, startOfDay, addDays } from 'date-fns';
 
 const mockApis: ApiDetails[] = [
   { name: "OpenMeteoX", description: "Advanced open-source API with high resolution.", accuracy: 0.92, recency: 0.5, consistency: 0.95 },
@@ -62,7 +62,6 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
       const speedVal = hourlySpeeds[i];
       const directionVal = hourlyDirections[i];
 
-      // Ensure speed and direction are valid numbers before processing
       if (typeof speedVal === 'number' && typeof directionVal === 'number' && !isNaN(speedVal) && !isNaN(directionVal)) {
         const dateTime = new Date(hourlyTimes[i] * 1000);
         forecast.push({
@@ -74,20 +73,20 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
     }
 
     const dailySummary: DailyForecastSummary[] = [];
-    const dailyTimes = data.daily.time; 
+    const dailyTimes = data.daily.time; // These are UNIX timestamps (seconds)
     const dailyWeatherCodes = data.daily.weather_code;
     const dailyTempMax = data.daily.temperature_2m_max;
     const dailyTempMin = data.daily.temperature_2m_min;
 
     for (let i = 0; i < dailyTimes.length; i++) {
-      const dateVal = dailyTimes[i];
+      const timestampSeconds = dailyTimes[i];
       const tempMinVal = dailyTempMin[i];
       const tempMaxVal = dailyTempMax[i];
       const weatherCodeVal = dailyWeatherCodes[i];
 
-      if (dateVal && typeof tempMinVal === 'number' && typeof tempMaxVal === 'number' && typeof weatherCodeVal === 'number') {
+      if (typeof timestampSeconds === 'number' && typeof tempMinVal === 'number' && typeof tempMaxVal === 'number' && typeof weatherCodeVal === 'number') {
          try {
-          const parsedDate = parseISO(dateVal);
+          const parsedDate = new Date(timestampSeconds * 1000); // Convert UNIX timestamp (seconds) to milliseconds
           if (parsedDate instanceof Date && !isNaN(parsedDate.valueOf())) {
             dailySummary.push({
               date: parsedDate,
@@ -96,11 +95,13 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
               weatherCode: weatherCodeVal,
             });
           } else {
-            console.warn(`Invalid date string encountered: ${dateVal}`);
+            console.warn(`Invalid timestamp encountered while processing daily summary: ${timestampSeconds}`);
           }
         } catch (e) {
-          console.warn(`Error parsing date string: ${dateVal}`, e);
+          console.warn(`Error processing daily summary timestamp: ${timestampSeconds}`, e);
         }
+      } else {
+         console.warn('Skipping daily summary item due to invalid data types:', { timestampSeconds, tempMinVal, tempMaxVal, weatherCodeVal });
       }
     }
     
@@ -130,7 +131,7 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
             date: addDays(startOfDay(fallbackDate), i),
             tempMin: 10 + Math.floor(Math.random() * 5),
             tempMax: 20 + Math.floor(Math.random() * 5),
-            weatherCode: Math.floor(Math.random() * 4), // Mock codes 0-3
+            weatherCode: Math.floor(Math.random() * 4), 
         });
     }
     return {
@@ -142,3 +143,4 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
     };
   }
 }
+
