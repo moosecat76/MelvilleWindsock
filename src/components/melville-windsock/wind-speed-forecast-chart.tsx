@@ -67,7 +67,7 @@ const ForecastArrowDot = (props: any) => {
   
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
-  const iconSize = 20 * 2; 
+  const iconSize = 16; // Reduced size for better fit as a dot
 
   let arrowColorClass = "text-primary opacity-75"; 
   if (payload.speed10m < 12) {
@@ -79,7 +79,7 @@ const ForecastArrowDot = (props: any) => {
   }
 
   return (
-    <g transform={`translate(${cx}, ${cy}) rotate(${cssRotation})`}>
+    <g transform={`translate(${cx},${cy}) rotate(${cssRotation})`}>
       <Navigation
         className={arrowColorClass}
         width={iconSize}
@@ -87,6 +87,25 @@ const ForecastArrowDot = (props: any) => {
         x={-iconSize / 2} 
         y={-iconSize / 2} 
       />
+    </g>
+  );
+};
+
+const CustomXAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  if (!payload || !(payload.value instanceof Date)) {
+    return null;
+  }
+  const date = payload.value;
+  const dayOfWeek = format(date, "EEE"); // e.g., "Mon"
+  const dayOfMonthWithSuffix = format(date, "do"); // e.g., "4th"
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} textAnchor="middle" fill="hsl(var(--muted-foreground))" fontSize="12px" className="font-sans">
+        <tspan x="0" dy="0em">{dayOfWeek}</tspan>
+        <tspan x="0" dy="1.2em">{dayOfMonthWithSuffix}</tspan>
+      </text>
     </g>
   );
 };
@@ -114,7 +133,7 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
     .filter(s => typeof s === 'number' && isFinite(s));
 
   let yMin = 0;
-  let yMax = 25; // Default Y-axis max if no valid speeds
+  let yMax = 25; 
 
   if (validSpeeds.length > 0) {
     const minSpeed = Math.min(...validSpeeds);
@@ -123,26 +142,30 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
     yMin = Math.max(0, Math.floor(minSpeed / 5) * 5 - 5);
     yMax = Math.ceil(maxSpeed / 5) * 5 + 5;
     
-    if (yMax <= yMin) { // Ensure yMax is greater than yMin
+    if (yMax <= yMin) { 
       yMax = yMin + 5;
     }
-    if (minSpeed === maxSpeed) { // Handle case where all speeds are the same
+    if (minSpeed === maxSpeed) { 
        yMin = Math.max(0, minSpeed - 5);
        yMax = maxSpeed + 5;
     }
-    if (yMin === 0 && yMax === 0 && hourlyData.some(d => d.speed10m === 0)) { // All speeds are 0
-        yMax = 5; // Give some room above 0
+     if (yMin === 0 && yMax === 5 && minSpeed === 0 && maxSpeed === 0) { // All speeds are 0, yMin might be -5
+        yMin = 0;
+        yMax = 5; 
+    } else if (yMin < 0 && minSpeed === 0) { // Ensure yMin is not negative if actual minSpeed is 0
+        yMin = 0;
     }
 
 
   } else if (hourlyData.length > 0 && validSpeeds.length === 0) {
-    // Data exists but no valid speeds, use default yMin=0, yMax=25
+     yMin = 0;
+     yMax = 25;
   }
-  // If hourlyData itself is empty, the component returns early.
-
+  
   const yDomain: [number, number] = [yMin, yMax];
 
-  const xAxisInterval = hourlyData.length > 24 ? Math.floor(hourlyData.length / 7 / 6) * 2 : 0; // Adjust for 7 days, 2-hourly
+  // Assuming 2-hourly data (12 data points per day), interval of 11 shows a tick roughly every day.
+  const xAxisInterval = 11; 
 
 
   return (
@@ -161,7 +184,6 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
               {dailySummaryData.map((day) => {
                  try {
                     const { icon: WeatherIcon, description: weatherDesc } = getWeatherIconAndDescription(day.weatherCode);
-                    // Ensure date is valid before trying to format or get ISO string for key
                     const dayKey = day.date instanceof Date && !isNaN(day.date.valueOf()) ? day.date.toISOString() : String(Math.random());
                     const dayFormatted = day.date instanceof Date && !isNaN(day.date.valueOf()) ? format(day.date, "EEE") : "N/A";
                     
@@ -176,7 +198,7 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
                     );
                   } catch (e) {
                     console.error("Error rendering daily summary item for date:", day.date, e);
-                    return null; // Skip rendering this item if it errors
+                    return null; 
                   }
               })}
             </div>
@@ -191,7 +213,7 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
                 top: 20, 
                 right: 20,
                 left: -10, 
-                bottom: 5,
+                bottom: 20, // Increased bottom margin for two-line X-axis ticks
               }}
               accessibilityLayer
             >
@@ -200,9 +222,9 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
                 dataKey="dateTime"
                 tickLine={false}
                 axisLine={false}
-                tickMargin={8}
+                tickMargin={10} // Adjusted margin for custom tick
                 interval={xAxisInterval} 
-                tickFormatter={(value: Date) => format(value, "EEE, MMM d")} 
+                tick={<CustomXAxisTick />}
               />
               <YAxis
                 tickLine={false}
@@ -246,3 +268,4 @@ export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpe
     </Card>
   );
 }
+
