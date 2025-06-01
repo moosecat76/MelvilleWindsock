@@ -59,27 +59,49 @@ export async function fetchMelvilleWindsData(): Promise<FullWeatherData> {
     for (let i = 0; i < hourlyTimes.length; i += 2) {
       if (forecast.length >= FORECAST_DAYS * 12) break; 
 
-      const dateTime = new Date(hourlyTimes[i] * 1000);
-      forecast.push({
-        dateTime: dateTime,
-        speed10m: Math.round(hourlySpeeds[i]),
-        direction10m: degreesToCardinal(hourlyDirections[i]),
-      });
+      const speedVal = hourlySpeeds[i];
+      const directionVal = hourlyDirections[i];
+
+      // Ensure speed and direction are valid numbers before processing
+      if (typeof speedVal === 'number' && typeof directionVal === 'number' && !isNaN(speedVal) && !isNaN(directionVal)) {
+        const dateTime = new Date(hourlyTimes[i] * 1000);
+        forecast.push({
+          dateTime: dateTime,
+          speed10m: Math.round(speedVal),
+          direction10m: degreesToCardinal(directionVal),
+        });
+      }
     }
 
     const dailySummary: DailyForecastSummary[] = [];
-    const dailyTimes = data.daily.time; // These are strings like "2024-07-25"
+    const dailyTimes = data.daily.time; 
     const dailyWeatherCodes = data.daily.weather_code;
     const dailyTempMax = data.daily.temperature_2m_max;
     const dailyTempMin = data.daily.temperature_2m_min;
 
     for (let i = 0; i < dailyTimes.length; i++) {
-      dailySummary.push({
-        date: parseISO(dailyTimes[i]), // Open-Meteo returns YYYY-MM-DD strings for daily time
-        tempMin: Math.round(dailyTempMin[i]),
-        tempMax: Math.round(dailyTempMax[i]),
-        weatherCode: dailyWeatherCodes[i],
-      });
+      const dateVal = dailyTimes[i];
+      const tempMinVal = dailyTempMin[i];
+      const tempMaxVal = dailyTempMax[i];
+      const weatherCodeVal = dailyWeatherCodes[i];
+
+      if (dateVal && typeof tempMinVal === 'number' && typeof tempMaxVal === 'number' && typeof weatherCodeVal === 'number') {
+         try {
+          const parsedDate = parseISO(dateVal);
+          if (parsedDate instanceof Date && !isNaN(parsedDate.valueOf())) {
+            dailySummary.push({
+              date: parsedDate,
+              tempMin: Math.round(tempMinVal),
+              tempMax: Math.round(tempMaxVal),
+              weatherCode: weatherCodeVal,
+            });
+          } else {
+            console.warn(`Invalid date string encountered: ${dateVal}`);
+          }
+        } catch (e) {
+          console.warn(`Error parsing date string: ${dateVal}`, e);
+        }
+      }
     }
     
     return {
