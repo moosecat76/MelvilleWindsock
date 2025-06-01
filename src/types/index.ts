@@ -11,9 +11,17 @@ export interface CurrentWindInfo {
   direction10m: string; // Wind direction at 10 meters (e.g., "NW", "S", "ENE") - direction FROM
 }
 
+export interface DailyForecastSummary {
+  date: Date;
+  tempMin: number;
+  tempMax: number;
+  weatherCode: number;
+}
+
 export interface FullWeatherData {
   currentSpeed: CurrentWindInfo;
   forecast: WeatherDataPoint[];
+  dailySummary: DailyForecastSummary[];
   selectedApiName: string;
   reasoning: string;
 }
@@ -26,4 +34,3 @@ export interface ApiDetails {
   recency: number; // in hours
   consistency: number; // 0-1
 }
-

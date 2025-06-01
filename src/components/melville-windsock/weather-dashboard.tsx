@@ -28,9 +28,10 @@ export function WeatherDashboard() {
     } catch (err) {
       console.error("Dashboard error:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred while fetching data.");
-      setWeatherData({
-        currentSpeed: { speed10m: 0, unit: "km/h", direction10m: "N/A" },
+      setWeatherData({ // Ensure fallback structure matches FullWeatherData
+        currentSpeed: { speed10m: 0, unit: "kn", direction10m: "N/A" },
         forecast: [],
+        dailySummary: [], // Added for consistency
         selectedApiName: "Error",
         reasoning: "Failed to load data from server.",
       });
@@ -67,7 +68,10 @@ export function WeatherDashboard() {
               <CurrentWindDisplay data={weatherData.currentSpeed} />
               <ApiSelectionInfo apiName={weatherData.selectedApiName} reasoning={weatherData.reasoning} />
             </div>
-            <WindSpeedForecastChart data={weatherData.forecast} />
+            <WindSpeedForecastChart 
+              hourlyData={weatherData.forecast} 
+              dailySummaryData={weatherData.dailySummary || []} 
+            />
             <ForecastTable data={weatherData.forecast} />
           </div>
         )}

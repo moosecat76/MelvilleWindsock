@@ -1,17 +1,18 @@
 
 "use client";
 
-import type { WeatherDataPoint } from '@/types';
+import type { WeatherDataPoint, DailyForecastSummary } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Label } from 'recharts';
 import { TrendingUp, Navigation } from 'lucide-react';
 import React from 'react';
-import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES, DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING } from '@/lib/weather-utils';
+import { getOppositeDirection, COMPASS_DIRECTION_TO_DEGREES, DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING, getWeatherIconAndDescription } from '@/lib/weather-utils';
 import { format } from 'date-fns';
 
 interface WindSpeedForecastChartProps {
-  data: WeatherDataPoint[];
+  hourlyData: WeatherDataPoint[];
+  dailySummaryData: DailyForecastSummary[];
 }
 
 const chartConfig = {
@@ -40,7 +41,7 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
           </div>
           <div className="flex items-center">
              <span
-              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent"
+              className="h-2.5 w-2.5 shrink-0 rounded-[2px] mr-1.5 bg-transparent" // Invisible spacer
             />
             <p className="text-sm text-muted-foreground">
               From: <span className="font-mono font-medium tabular-nums text-foreground">{comingFromDirection}</span>
@@ -66,9 +67,9 @@ const ForecastArrowDot = (props: any) => {
   
   const cssRotation = (targetBearing - DEFAULT_LUCIDE_NAVIGATION_ICON_BEARING + 360) % 360;
   
-  const iconSize = 20 * 2; // Increased size
+  const iconSize = 20 * 2; 
 
-  let arrowColorClass = "text-primary opacity-75"; // Increased opacity
+  let arrowColorClass = "text-primary opacity-75"; 
   if (payload.speed10m < 12) {
     arrowColorClass = "text-red-500 opacity-75";
   } else if (payload.speed10m >= 12 && payload.speed10m <= 20) {
@@ -91,14 +92,14 @@ const ForecastArrowDot = (props: any) => {
 };
 
 
-export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
-  if (!data || data.length === 0) {
+export function WindSpeedForecastChart({ hourlyData, dailySummaryData }: WindSpeedForecastChartProps) {
+  if (!hourlyData || hourlyData.length === 0) {
     return (
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl font-headline flex items-center">
             <TrendingUp className="mr-2 h-6 w-6 text-primary" />
-            5-Day Wind Forecast (10m)
+            7-Day Wind Forecast (10m)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -108,7 +109,7 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     );
   }
   
-  const speeds = data.map(d => d.speed10m);
+  const speeds = hourlyData.map(d => d.speed10m);
   const minSpeed = Math.min(...speeds);
   const maxSpeed = Math.max(...speeds);
   const yDomain: [number, number] = [
@@ -116,25 +117,44 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     Math.ceil(maxSpeed / 5) * 5 + 5      
   ];
 
-  // Assuming 2-hourly data, 12 data points per day.
-  // interval={11} will show a tick for every 12th data point (i.e., once per day).
-  const xAxisInterval = data.length > 12 ? 11 : 0;
+  const xAxisInterval = hourlyData.length > 12 ? 11 : 0; // Approx once per day for 2-hourly data
 
 
   return (
     <Card className="shadow-lg">
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-xl font-headline flex items-center">
           <TrendingUp className="mr-2 h-6 w-6 text-primary" />
-          5-Day Wind Forecast (10m)
+          7-Day Wind Forecast (10m)
         </CardTitle>
-        <CardDescription>Predicted 2-hourly wind speed and direction (origin) at 10m height for the next 5 days at Melville Waters.</CardDescription>
+        <CardDescription>Predicted 2-hourly wind speed and direction (origin) at 10m height for the next 7 days at Melville Waters, with daily weather summaries.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {/* Daily Summaries Section */}
+        {dailySummaryData && dailySummaryData.length > 0 && (
+          <div className="mb-4 p-3 bg-muted/50 rounded-lg shadow-sm">
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 text-center">
+              {dailySummaryData.map((day) => {
+                const { icon: WeatherIcon, description: weatherDesc } = getWeatherIconAndDescription(day.weatherCode);
+                return (
+                  <div key={day.date.toISOString()} className="flex flex-col items-center p-2 rounded-md bg-background shadow-xs hover:shadow-md transition-shadow" title={weatherDesc}>
+                    <p className="text-xs sm:text-sm font-medium text-primary">{format(day.date, "EEE")}</p>
+                    <WeatherIcon className="h-6 w-6 sm:h-8 sm:w-8 my-1 text-accent" />
+                    <p className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                      {day.tempMin}°<span className="hidden sm:inline">C</span>-{day.tempMax}°<span className="hidden sm:inline">C</span>
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Chart Section */}
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={data}
+              data={hourlyData}
               margin={{
                 top: 20, 
                 right: 20,
@@ -194,4 +214,3 @@ export function WindSpeedForecastChart({ data }: WindSpeedForecastChartProps) {
     </Card>
   );
 }
-
